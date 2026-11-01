@@ -73,6 +73,7 @@ export async function startGuiServer(ctx: Context, gui: GuiPlugin, port: number)
       if (url.pathname === "/api/workspaces") { json(ctx.workspaceRegistry.create(str("path"))); return }
       switch (url.pathname) {
         case "/api/create": gui.createSession(str("cwd"), str("name")); break
+        case "/api/delete-archived": await gui.deleteArchivedSession(str("id")); break
         case "/api/archive": await gui.archiveSession(str("id"), true); break
         case "/api/unarchive": await gui.archiveSession(str("id"), false); break
         case "/api/view": await gui.viewSession(str("id")); break

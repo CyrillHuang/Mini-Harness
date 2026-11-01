@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, mkdirSync, writeFileSync, renameSync } from "node:fs"
+import { existsSync, readFileSync, mkdirSync, writeFileSync, renameSync, unlinkSync } from "node:fs"
 import { join } from "node:path"
 import { agentStateDir } from "./storage-path.js"
 import { randomUUID } from "node:crypto"
@@ -38,6 +38,8 @@ export class SessionPlugin extends Service {
   private readonly records = new Map<string, ManagedSession>()
   private archiveFile = join(agentStateDir(), "archived-sessions.json")
   private archived: Record<string, number> = {}
+  private deleting = new Set<string>()
+  private deletionFile = join(agentStateDir(), "pending-session-deletion.json")
   private currentSession?: Session
   private closed = false
   private closePromise?: Promise<void>
@@ -45,6 +47,10 @@ export class SessionPlugin extends Service {
   constructor(ctx: Context) {
     super(ctx, "sessions")
     if (existsSync(this.archiveFile)) this.archived = JSON.parse(readFileSync(this.archiveFile, "utf8"))
+    if (existsSync(this.deletionFile)) {
+      const ids: string[] = JSON.parse(readFileSync(this.deletionFile, "utf8"))
+      this.finishDeletion(ids)
+    }
 
     ctx.effect(
       () => () => {
@@ -104,6 +110,7 @@ export class SessionPlugin extends Service {
   async open(sessionId: string): Promise<Session> {
     this.assertOpen()
 
+    if (this.deleting.has(sessionId)) throw new Error("Session is being deleted")
     const existing = this.records.get(sessionId)
     if (existing) return existing.session
 
@@ -200,6 +207,7 @@ export class SessionPlugin extends Service {
     this.assertOpen()
 
     for (const { session, store } of this.records.values()) {
+      if (this.deleting.has(session.sessionId)) continue
       const entries = session.entries()
       const first = entries[0]
       const last = entries[entries.length - 1]
@@ -236,6 +244,7 @@ export class SessionPlugin extends Service {
     const merged = new Map(disk.map((summary) => [summary.id, summary]))
     for (const summary of memory) merged.set(summary.id, summary)
     return [...merged.values()]
+      .filter(summary => !this.deleting.has(summary.id))
       .filter(summary => this.isArchived(summary.id) === !!options.archived)
       .map(summary => ({ ...summary, archivedAt: this.archived[summary.id] }))
       .filter((summary) => options.includeSubagents || summary.parentSession === undefined)
@@ -244,10 +253,46 @@ export class SessionPlugin extends Service {
       )
   }
 
+  private finishDeletion(ids: string[]): void {
+    const paths = ids.map(id => sessionPath(id)) // Validate all IDs before touching files.
+    for (const path of paths) {
+      try { unlinkSync(path) } catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error }
+    }
+    const next = { ...this.archived }
+    for (const id of ids) { delete next[id]; this.records.delete(id) }
+    writeFileSync(this.archiveFile + ".tmp", JSON.stringify(next))
+    renameSync(this.archiveFile + ".tmp", this.archiveFile)
+    this.archived = next
+    unlinkSync(this.deletionFile)
+  }
+
+  async deleteArchived(id: string): Promise<void> {
+    this.assertOpen()
+    if (!this.isArchived(id)) throw new Error("Only archived sessions can be deleted")
+    if (this.deleting.size) throw new Error("A deletion is already in progress; restart to retry interrupted cleanup")
+    const ids = new Set<string>([id])
+    for (const parent of ids) {
+      for (const child of await this.catalog.listChildren(parent)) ids.add(child.id)
+      for (const { session } of this.records.values()) if (session.parentSession === parent) ids.add(session.sessionId)
+    }
+    for (const key of ids) sessionPath(key)
+    this.deleting = ids
+    try {
+      for (const key of ids) await this.records.get(key)?.store.close()
+      mkdirSync(agentStateDir(), { recursive: true })
+      writeFileSync(this.deletionFile + ".tmp", JSON.stringify([...ids]))
+      renameSync(this.deletionFile + ".tmp", this.deletionFile)
+      this.finishDeletion([...ids])
+      if (this.currentSession && ids.has(this.currentSession.sessionId)) this.currentSession = undefined
+      await this.catalog.list() // Reconcile removed files with the persisted index.
+    } finally { if (!existsSync(this.deletionFile)) this.deleting.clear() }
+  }
+
   isArchived(id: string): boolean { return Object.hasOwn(this.archived, id) }
 
   setArchived(id: string, archived: boolean): void {
     this.assertOpen()
+    if (this.deleting.has(id)) throw new Error("Session is being deleted")
     if (!this.records.has(id)) throw new Error("Unknown session")
     const next = { ...this.archived }
     if (archived) next[id] = Date.now()

@@ -90,6 +90,17 @@ export class GuiPlugin extends Service {
     return this.getState()
   }
 
+  async deleteArchivedSession(id: string): Promise<void> {
+    this.assertCanSwitch()
+    if (this.approvals.size) throw new Error("An approval is pending")
+    this.switchingSession = true
+    try {
+      await this.ctx.sessions.deleteArchived(id)
+      if (this.viewedId === id) this.viewedId = ""
+      this.unread.delete(id)
+    } finally { this.switchingSession = false }
+  }
+
   async archiveSession(id: string, archived: boolean): Promise<void> {
     if (this.switchingSession) throw new Error("Session is busy")
     this.switchingSession = true
