@@ -1,0 +1,33 @@
+{
+  "id": "firekeeper",
+  "displayName": "FireKeeper",
+  "description": "A gentle chibi pixel-art fire keeper pet with a silver blindfold, dark robe, dark gold trim, ash-blonde hair, and a small guarded flame.",
+  "spritesheetPath": "spritesheet.webp",
+  "kind": "creature",
+  "source": "",
+  "ownerId": "824cba7d-e766-42f0-9a70-ccf87cb36c33",
+  "ownerHandle": "vvv",
+  "ownerName": "VVV",
+  "uploadedAt": "2026-05-21T18:45:16.045Z",
+  "validationReport": {
+    "manifestId": "firekeeper",
+    "atlasSize": "1536x1872",
+    "cellSize": "192x208",
+    "statesDetected": 9,
+    "manifestBytes": 276,
+    "spritesheetBytes": 2161680
+  },
+  "stats": {
+    "views": 42,
+    "downloads": 0,
+    "likes": 2,
+    "comments": 0
+  },
+  "assets": {
+    "spritesheetUrl": "https://file.aimcp.info/codex-pets/firekeeper-fcc21f49/spritesheet-a9e5780bcdb9a58205d453d5.webp",
+    "posterUrl": "https://file.aimcp.info/codex-pets/firekeeper-fcc21f49/poster.webp",
+    "previewUrl": "https://file.aimcp.info/codex-pets/firekeeper-fcc21f49/preview.webp",
+    "shareImageUrl": "https://file.aimcp.info/codex-pets/firekeeper-fcc21f49/share.png",
+    "downloadUrl": ""
+  }
+}

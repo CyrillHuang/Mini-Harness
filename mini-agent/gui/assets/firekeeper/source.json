@@ -1,0 +1,35 @@
+{
+  "source": "https://www.aimcp.info/es/codex-pets/firekeeper-fcc21f49",
+  "author": "VVV",
+  "license": "unknown",
+  "retrievedAt": "2026-10-31T15:43:36.715Z",
+  "manifestSource": "Embedded manifest_json from source page; pet.json is a locally extracted minimal descriptor, not an official downloaded package.",
+  "layout": {
+    "frameWidth": 192,
+    "frameHeight": 208,
+    "columns": 8,
+    "rows": 9,
+    "frameCountsVerified": false,
+    "timingVerified": false
+  },
+  "assets": [
+    {
+      "file": "spritesheet.webp",
+      "url": "https://file.aimcp.info/codex-pets/firekeeper-fcc21f49/spritesheet-a9e5780bcdb9a58205d453d5.webp",
+      "bytes": 2161680,
+      "sha256": "a9e5780bcdb9a58205d453d50acfba05af137a705082d6f7d8d3ac4903b61393"
+    },
+    {
+      "file": "preview.webp",
+      "url": "https://file.aimcp.info/codex-pets/firekeeper-fcc21f49/preview.webp",
+      "bytes": 180552,
+      "sha256": "cf2f6555c7bc2623a7b6da55d3a7e5a64e81d3e3e39fa16037fe33e388ba6031"
+    },
+    {
+      "file": "poster.webp",
+      "url": "https://file.aimcp.info/codex-pets/firekeeper-fcc21f49/poster.webp",
+      "bytes": 45306,
+      "sha256": "faf8f1c224cf34a9d9c6e82e2832e29aef918d36e5f52a665b9b0a6f10829579"
+    }
+  ]
+}

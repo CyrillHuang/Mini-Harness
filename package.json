@@ -1,0 +1,35 @@
+{
+  "name": "mini-harness",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "mini-agent": "node --env-file=.env --import tsx mini-agent/index.ts",
+    "mini-agent:tui": "node --env-file=.env --import tsx mini-agent/index.ts",
+    "mini-agent:gui": "node --env-file=.env --import tsx mini-agent/index.ts --gui",
+    "acceptance:gui": "node --import tsx mini-agent/acceptance/gui.ts",
+    "acceptance:streaming-agent": "node --import tsx mini-agent/acceptance/phase-streaming-agent.ts",
+    "acceptance:streaming-protocol": "node --import tsx mini-agent/acceptance/phase-streaming-protocol.ts",
+    "acceptance:streaming-abort": "node --import tsx mini-agent/acceptance/phase-streaming-abort.ts",
+    "acceptance:streaming-finish-reasons": "node --import tsx mini-agent/acceptance/phase-streaming-finish-reasons.ts",
+    "acceptance:context-overflow-errors": "node --import tsx mini-agent/acceptance/context-overflow-errors.ts",
+    "acceptance:agent-context-overflow": "node --import tsx mini-agent/acceptance/agent-context-overflow.ts",
+    "acceptance:agent-streaming-overflow": "node --import tsx mini-agent/acceptance/agent-streaming-overflow.ts",
+    "acceptance:agent-concurrency": "node --import tsx mini-agent/acceptance/agent-concurrency.ts",
+    "acceptance:agent-concurrency-abort": "node --import tsx mini-agent/acceptance/agent-concurrency-abort.ts",
+    "acceptance:subagent-catalog": "node --import tsx mini-agent/acceptance/subagent-catalog.ts",
+    "acceptance:tui-compaction-user": "node --import tsx mini-agent/acceptance/tui-compaction-user.ts",
+    "acceptance:compaction-repeated": "node --import tsx mini-agent/acceptance/compaction-repeated.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.2",
+    "dompurify": "^3.4.17",
+    "marked": "^18.1.2"
+  }
+}
