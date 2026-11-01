@@ -92,12 +92,43 @@ body.sidebar-collapsed #sidebar{transform:translateX(-100%);pointer-events:none}
 #sidebar .sessions-heading{padding-left:0}
 #sidebar .workspace-heading{border:0;overflow:visible}
 #sidebar .workspace-heading button:first-child{position:relative;padding-left:0}
-#sidebar .workspace-heading button:first-child::before{content:attr(data-chevron);position:absolute;left:-13px;font-size:11px}
-#sidebar .sessions button{padding-left:0;border-left:0}
+#sidebar .workspace-heading button:first-child{display:flex;align-items:center;gap:8px}
+.workspace-folder{width:18px;height:18px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+#sidebar .sessions button{border-left:0}
+#sidebar .sessions .session-row>button{padding-left:26px}
+#settingsPanel{height:auto}#showArchives{width:100%;border:0;text-align:left;padding:4px 8px;height:28px}
+.session-row{display:flex;align-items:center;position:relative}.session-row>button{flex:1;min-width:0}.session-menu{margin:0;padding:0;border:0;background:transparent}.session-menu>summary{list-style:none;padding:4px;opacity:0}.session-row:hover summary,.session-menu:focus-within summary,.session-menu[open] summary{opacity:1}.session-actions{position:absolute;right:0;z-index:3;min-width:110px;padding:4px;background:white;border-radius:9px;box-shadow:0 3px 12px #0002}#sidebar .session-actions>button{display:block;width:100%;margin:0;padding:5px 9px;border:0;text-align:left;background:transparent}
+.archive-row{display:flex;gap:8px;align-items:center;margin:8px 0}.archive-row>div{flex:1;overflow-wrap:anywhere}#archiveList{max-height:60vh;overflow:auto}
+/* Highlight the complete session row, including its overflow menu. */
+#sidebar .session-row{margin:2px -8px;padding:0 8px;border-radius:7px}
+#sidebar .session-row:hover{background:#e2e7f0}
+#sidebar .session-row:has(>button.selected){background:#dfe7f7}
+#sidebar .session-row:has(>button.selected):hover{background:#d6e1f5}
+#sidebar .session-row>button,#sidebar .session-row>button:hover:not(:disabled),#sidebar .session-row>button.selected,#sidebar .session-row>button.selected:hover:not(:disabled){background:transparent;margin:0}
+/* Match workspace hover bounds to the session rows. */
+#sidebar .workspace-heading{margin-left:-8px;margin-right:-8px;padding-left:8px;padding-right:8px}
+/* Align session and workspace action centers. */
+#sidebar .session-menu{flex:0 0 30px;width:30px}
+#sidebar .session-menu>summary{display:grid;place-items:center;width:30px;height:28px;padding:0;border-radius:6px}
+#sidebar .session-menu>summary:hover{background:#cad6eb}
+#sidebar .session-actions>button:hover:not(:disabled),#sidebar .session-actions>button:focus-visible{background:#e2e7f0!important}
+#sidebar .session-actions>button:active:not(:disabled){background:#cad6eb!important}
+#archiveDialog{padding:14px 16px;border-radius:14px;color:#253045}
+.archive-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+#archiveTitle{margin:0;font-size:17px;line-height:28px}
+#closeArchives{display:grid;place-items:center;flex-shrink:0;width:28px;height:28px;padding:5px;border:0;border-radius:50%;background:#f0f2f6;color:#738097;transition:background 120ms,color 120ms}
+#closeArchives svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+#closeArchives:hover{background:#dfe5ef;color:#253045}
+#closeArchives:active{background:#ced8e8}
+#closeArchives:focus-visible{outline:2px solid #5b7cce;outline-offset:2px}
+#archiveList h4{margin:10px 0 6px;font-size:13px;color:#738097;overflow-wrap:anywhere}
+#archiveList .archive-row{margin:4px 0;gap:8px}
+#archiveList .archive-row>button{padding:5px 9px;font-size:13px}
 </style>
-<nav id="rail" aria-label="工作台工具"><button id="sidebarToggle" type="button" aria-controls="sidebar" aria-expanded="true" aria-label="收起侧边栏" title="收起侧边栏"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/><path id="sidebarChevron" d="m16 9-3 3 3 3"/></svg></button><button id="settingsToggle" type="button" aria-label="设置" title="设置" aria-expanded="false" aria-controls="settingsPanel"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/></svg></button></nav><section id="settingsPanel" hidden aria-label="设置"><div id="petSettings"><span class="muted">桌宠未启用</span></div></section>
+<nav id="rail" aria-label="工作台工具"><button id="sidebarToggle" type="button" aria-controls="sidebar" aria-expanded="true" aria-label="收起侧边栏" title="收起侧边栏"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/><path id="sidebarChevron" d="m16 9-3 3 3 3"/></svg></button><button id="settingsToggle" type="button" aria-label="设置" title="设置" aria-expanded="false" aria-controls="settingsPanel"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/></svg></button></nav><section id="settingsPanel" hidden aria-label="设置"><button id="showArchives">已归档会话</button><div id="petSettings"><span class="muted">桌宠未启用</span></div></section>
 <aside id="sidebar"><h1>Mini-Harness</h1><small>本地 Agent 工作台</small><h2 class="sessions-heading"><span>工作区</span><button id="addWorkspace" aria-label="添加工作区" title="添加工作区">+</button></h2><div id="workspaces"></div></aside>
-<main><header><div class="header-start"><div><strong id="title">选择工作区，开始对话</strong></div></div><div class="row"><button id="rename">重命名</button></div></header><div id="chat"><p class="muted">选择或创建一个会话。运行环境为 WSL 时，请使用 /mnt/d/... 路径。</p></div><footer><div id="notice"></div><div id="error" role="alert"></div><textarea rows="1" id="input" placeholder="输入消息… Enter 发送，Shift+Enter 换行"></textarea><button id="send" type="button" aria-label="发送" title="发送" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button></footer></main>
+<main><header><div class="header-start"><div><strong id="title">选择工作区，开始对话</strong></div></div></header><div id="chat"><p class="muted">选择或创建一个会话。运行环境为 WSL 时，请使用 /mnt/d/... 路径。</p></div><footer><div id="notice"></div><div id="error" role="alert"></div><textarea rows="1" id="input" placeholder="输入消息… Enter 发送，Shift+Enter 换行"></textarea><button id="send" type="button" aria-label="发送" title="发送" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button></footer></main>
+<dialog id="archiveDialog" aria-labelledby="archiveTitle"><div class="archive-header"><h3 id="archiveTitle">已归档会话</h3><button id="closeArchives" type="button" aria-label="关闭已归档会话" title="关闭" autofocus><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg></button></div><div id="archiveList"></div></dialog>
 <dialog id="picker"><h3>添加工作区</h3><input id="dirpath"><div class="row" style="margin-top:8px"><button id="parent">上一级</button><button id="goto">前往</button></div><div id="dirs"></div><div class="row"><button id="choose" class="primary">添加此目录</button><button id="closePicker">关闭</button></div></dialog>
 <script type="module">
 import { renderMarkdown } from "/markdown.js";
@@ -140,6 +171,19 @@ new ResizeObserver(([entry])=>{
   document.querySelector('main').style.setProperty('--composer-height',document.querySelector('footer').getBoundingClientRect().height+'px');
   if(atBottom)chat.scrollTop=chat.scrollHeight;
 }).observe(document.querySelector('footer'));
+document.addEventListener('click',event=>{
+ for(const menu of document.querySelectorAll('.session-menu[open]')){
+  if(!menu.contains(event.target))menu.open=false;
+ }
+});
+document.addEventListener('keydown',event=>{
+ if(event.key!=='Escape')return;
+ for(const menu of document.querySelectorAll('.session-menu[open]')){
+  const restoreFocus=menu.contains(document.activeElement);
+  menu.open=false;
+  if(restoreFocus)menu.querySelector('summary').focus();
+ }
+});
 function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n}
 async function api(path,data){const r=await fetch('/api/'+path,data===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const v=await r.json();if(!r.ok)throw Error(v.error||r.statusText);return v}
 function task(fn){return async()=>{try{$('error').textContent='';await fn()}catch(e){$('error').textContent=e.message}}}
@@ -150,12 +194,17 @@ try{collapsedWorkspaces=new Set(JSON.parse(localStorage.getItem('collapsed-works
 function drawWorkspaces(){
  $('workspaces').replaceChildren(...workspaceList.map(w=>{
   const group=el('section'),head=el('div',undefined,'row workspace-heading'),label=el('button',w.title+(w.available?'':' · 不可用')),add=el('button','+');
-  label.dataset.chevron=collapsedWorkspaces.has(w.path)?'▸':'▾';label.title=w.path;label.style.cssText='flex:1;text-align:left;min-width:0;overflow-wrap:anywhere';label.setAttribute('aria-expanded',String(!collapsedWorkspaces.has(w.path)));
+  const folder=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  folder.setAttribute('viewBox','0 0 24 24');folder.setAttribute('aria-hidden','true');folder.classList.add('workspace-folder');
+  const outline=document.createElementNS('http://www.w3.org/2000/svg','path');
+  outline.setAttribute('d',collapsedWorkspaces.has(w.path)?'M3 9V6a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Zm0 0h18':'M3 17V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v2M3 19l3-9h16l-3 9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z');
+  folder.append(outline);const labelText=el('span',label.textContent);label.replaceChildren(folder,labelText);
+  label.title=w.path;label.style.cssText='flex:1;text-align:left;min-width:0;overflow-wrap:anywhere';label.setAttribute('aria-expanded',String(!collapsedWorkspaces.has(w.path)));
   label.onclick=()=>{if(collapsedWorkspaces.has(w.path))collapsedWorkspaces.delete(w.path);else collapsedWorkspaces.add(w.path);try{localStorage.setItem('collapsed-workspaces',JSON.stringify([...collapsedWorkspaces]))}catch{}drawWorkspaces()};
   add.title='新建会话';add.setAttribute('aria-label','在 '+w.title+' 新建会话');add.disabled=!connected||!state?.canSwitch||!w.available;
   add.onclick=task(async()=>{const name=prompt('会话名称','New session');if(name===null)return;collapsedWorkspaces.delete(w.path);await command('create',{cwd:w.path,name});await sessions()});
   head.append(label,add);group.append(head);
-  if(!collapsedWorkspaces.has(w.path)){const list=el('div',undefined,'sessions');list.style.paddingLeft='0';for(const item of sessionLists.get(w.path)||[]){const button=el('button',item.name,item.id===state?.session?.id?'selected':'');button.disabled=!connected||!w.available;button.classList.toggle('unread',!!state?.unreadSessions?.includes(item.id));button.title=state?.unreadSessions?.includes(item.id)?'有新的状态变化':'';button.onclick=task(()=>command('view',{id:item.id}));list.append(button)}group.append(list)}
+  if(!collapsedWorkspaces.has(w.path)){const list=el('div',undefined,'sessions');list.style.paddingLeft='0';for(const item of sessionLists.get(w.path)||[]){const button=el('button',item.name,item.id===state?.session?.id?'selected':'');button.disabled=!connected||!w.available;button.classList.toggle('unread',!!state?.unreadSessions?.includes(item.id));button.title=state?.unreadSessions?.includes(item.id)?'有新的状态变化':'';button.onclick=task(()=>command('view',{id:item.id}));const row=el('div',undefined,'session-row'),menu=el('details',undefined,'session-menu'),summary=el('summary','⋯'),archive=el('button','归档会话');summary.title='会话操作';archive.onclick=task(async()=>{if(!confirm('归档“'+item.name+'”？可在设置中恢复，不会删除工作区文件。'))return;await command('archive',{id:item.id});$('input').value='';resizeInput();await sessions()});const actions=el('div',undefined,'session-actions'),rename=el('button','重命名');rename.disabled=archive.disabled=!connected;rename.onclick=task(async()=>{menu.open=false;const name=prompt('会话名称',item.name);if(name===null)return;await command('rename',{id:item.id,name});await sessions()});actions.append(rename,archive);menu.append(summary,actions);row.append(button,menu);list.append(row)}group.append(list)}
   return group;
  }));
 }
@@ -168,22 +217,30 @@ async function sessions(){
 }
 function render(s){state=s;const chat=$('chat'),bottom=chat.scrollHeight-chat.scrollTop-chat.clientHeight<90,scroll=chat.scrollTop;const changed=lastSession!==s.session?.id;if(changed){expanded.clear();lastSession=s.session?.id;sessions().catch(e=>{$('error').textContent=e.message})}
 $('title').textContent=s.session?.name||'选择工作区，开始对话';$('notice').textContent=s.notice||'';
-updateAction();$('rename').disabled=!connected||!s.session;drawWorkspaces();
+updateAction();drawWorkspaces();
 const nodes=[],messages=s.session?.messages||[],results=new Map(messages.filter(m=>m.role==='tool').map(m=>[m.toolCallId,m])),decisions=new Map(s.decisions.map(d=>[d.callId,d.outcome]));
 function message(role,text){const n=el('section',undefined,'message '+role);const body=el('div',undefined,'text');if(role==='assistant')renderMarkdown(body,(text??'').trimEnd());else body.textContent=text??'';n.append(el('div',role==='user'?'你':'Assistant','label'),body);nodes.push(n);return n}
 for(const m of messages){if(m.role==='tool')continue;const n=message(m.role,m.text);for(const c of m.toolCalls||[]){const d=el('details'),r=results.get(c.id);d.open=expanded.has(c.id);d.addEventListener('toggle',()=>{if(d.open)expanded.add(c.id);else expanded.delete(c.id)});d.append(el('summary',c.name+' · '+(decisions.get(c.id)|| (r?(r.isError?'失败':'完成'):(s.status==='running'?'等待 / 执行中':'未完成')))),el('pre',c.arguments));if(r)d.append(el('pre',r.text));n.append(d)}if(m.usage)n.append(el('small',`Tokens: input ${m.usage.inputTokens??'—'} · output ${m.usage.outputTokens??'—'}`))}
 if(s.pendingUserText)message('user',s.pendingUserText);if(s.pendingText)message('assistant',s.pendingText);
 for(const a of s.approvals){const card=el('section',undefined,'approval');card.append(el('strong','需要审批 · '+a.toolName),el('p',a.reason),el('pre',a.arguments||'未提供参数'));const row=el('div',undefined,'row');for(const [label,outcome]of [['允许一次','allowed-once'],['拒绝','rejected'],['取消审批','cancelled']]){const b=el('button',label);b.disabled=!connected;b.onclick=task(()=>command('approval',{id:a.id,outcome}));row.append(b)}card.append(row);nodes.push(card)}
 chat.replaceChildren(...nodes);if(bottom||changed)chat.scrollTop=chat.scrollHeight;else chat.scrollTop=scroll}
-$('rename').onclick=task(async()=>{const name=prompt('会话名称',state.session.name);if(name===null)return;await command('rename',{id:state.session.id,name});await sessions()});
+async function loadArchives(){
+ const items=await api('archives');$('archiveList').replaceChildren();
+ const groups=new Map();for(const item of items){if(!groups.has(item.cwd))groups.set(item.cwd,[]);groups.get(item.cwd).push(item)}
+ if(!items.length)$('archiveList').append(el('p','暂无已归档会话','muted'));
+ for(const [cwd,list] of groups){$('archiveList').append(el('h4',cwd));for(const item of list){const row=el('div',undefined,'archive-row'),info=el('div',item.name+' · '+new Date(item.archivedAt).toLocaleString()),view=el('button','查看'),restore=el('button','恢复');view.onclick=task(async()=>{await command('view',{id:item.id});$('archiveDialog').close()});restore.onclick=task(async()=>{await command('unarchive',{id:item.id});await loadArchives();await sessions()});row.append(info,view,restore);$('archiveList').append(row)}}
+}
+$('showArchives').onclick=task(async()=>{setSettingsOpen(false);await loadArchives();$('archiveDialog').showModal()});
+$('closeArchives').onclick=()=>$('archiveDialog').close();
+
 let actionPending=false;
 function isRunning(){return state?.status==='running'||!!state?.approvals?.length}
 function updateAction(){
  const button=$('send'),running=isRunning(),hasText=!!$('input').value.trim();
  button.classList.toggle('running',running);
- button.classList.toggle('ready',!running&&hasText&&!state?.backgroundBusy);
- button.disabled=!!state?.backgroundBusy||actionPending||!connected||(!running&&(!hasText||!state?.session||state.status!=='idle'||state.switchingSession));
- button.setAttribute('aria-label',running?'停止':'发送');button.title=state?.backgroundBusy?'有工作正在运行':running?'停止':'发送';
+ button.classList.toggle('ready',!running&&hasText&&!state?.archived&&!state?.backgroundBusy);
+ button.disabled=!!state?.archived||!!state?.backgroundBusy||actionPending||!connected||(!running&&(!hasText||!state?.session||state.status!=='idle'||state.switchingSession));
+ button.setAttribute('aria-label',running?'停止':'发送');button.title=state?.archived?'已归档会话，只读':state?.backgroundBusy?'有工作正在运行':running?'停止':'发送';
  button.innerHTML=running?'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>';
 }
 async function send(){

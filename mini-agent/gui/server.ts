@@ -56,6 +56,7 @@ export async function startGuiServer(ctx: Context, gui: GuiPlugin, port: number)
           catch { return { ...workspace, available: false } }
         }))); return
       }
+      if (req.method === "GET" && url.pathname === "/api/archives") { json(await ctx.sessions.list(undefined, { archived: true })); return }
       if (req.method === "GET" && url.pathname === "/api/state") { json(gui.getState()); return }
       if (req.method === "GET" && url.pathname === "/api/directories") {
         const path = await realpath(url.searchParams.get("path") || homedir())
@@ -72,6 +73,8 @@ export async function startGuiServer(ctx: Context, gui: GuiPlugin, port: number)
       if (url.pathname === "/api/workspaces") { json(ctx.workspaceRegistry.create(str("path"))); return }
       switch (url.pathname) {
         case "/api/create": gui.createSession(str("cwd"), str("name")); break
+        case "/api/archive": await gui.archiveSession(str("id"), true); break
+        case "/api/unarchive": await gui.archiveSession(str("id"), false); break
         case "/api/view": await gui.viewSession(str("id")); break
         case "/api/open": await gui.openSession(str("id")); break
         case "/api/rename": await gui.renameSession(str("id"), str("name")); break

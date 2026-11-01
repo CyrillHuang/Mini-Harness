@@ -11,6 +11,7 @@ export type GuiState = {
   notice?: string
   approvals: Array<ApprovalRequest & { id: string }>
   decisions: Array<{ callId: string; outcome: ApprovalOutcome }>
+  archived: boolean
   backgroundBusy: boolean
   unreadSessions: string[]
   canSwitch: boolean
@@ -89,6 +90,21 @@ export class GuiPlugin extends Service {
     return this.getState()
   }
 
+  async archiveSession(id: string, archived: boolean): Promise<void> {
+    if (this.switchingSession) throw new Error("Session is busy")
+    this.switchingSession = true
+    try {
+      await this.ctx.sessions.open(id)
+      if (archived && this.ctx.sessions.currentOrUndefined()?.sessionId === id) {
+        this.assertRuntimeIdle()
+        if (this.submitting || this.approvals.size) throw new Error("Session is busy")
+      }
+      this.ctx.sessions.setArchived(id, archived)
+      this.unread.delete(id)
+      if (archived && this.viewedId === id) this.viewedId = ""
+    } finally { this.switchingSession = false }
+  }
+
   async start(port = 4317): Promise<string> {
     return this.serverStart ??= startGuiServer(this.ctx, this, port)
   }
@@ -107,6 +123,7 @@ export class GuiPlugin extends Service {
     this.ctx.fiber.assertActive()
     if (this.switchingSession || this.submitting || this.ctx.agent.status !== "idle") throw new Error("Agent is busy")
     this.assertRuntimeIdle()
+    if (this.viewedId === "" || (this.viewedId && this.ctx.sessions.isArchived(this.viewedId))) throw new Error("Select an active session first")
     if (this.viewedId && this.viewedId !== this.ctx.sessions.currentOrUndefined()?.sessionId) {
       this.ctx.sessions.select(this.viewedId)
       this.selected()
@@ -185,11 +202,12 @@ export class GuiPlugin extends Service {
   getState(): GuiState {
     this.ctx.fiber.assertActive()
     const active = this.ctx.sessions.currentOrUndefined()
-    const session = (this.viewedId ? this.ctx.sessions.get(this.viewedId) : active)
+    const session = (this.viewedId !== undefined ? this.ctx.sessions.get(this.viewedId) : active)
     const viewingActive = session?.sessionId === active?.sessionId
     const busy = this.submitting || this.ctx.agent.status !== "idle" || this.ctx.jobs.list().some(job => job.status === "running" || job.status === "stopping")
     this.syncDraft()
     return {
+      archived: !!session && this.ctx.sessions.isArchived(session.sessionId),
       backgroundBusy: busy && !viewingActive,
       unreadSessions: [...this.unread],
       pendingText: viewingActive ? this.pendingText : "",

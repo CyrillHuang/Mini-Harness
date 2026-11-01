@@ -1,3 +1,6 @@
+import { existsSync, readFileSync, mkdirSync, writeFileSync, renameSync } from "node:fs"
+import { join } from "node:path"
+import { agentStateDir } from "./storage-path.js"
 import { randomUUID } from "node:crypto"
 import { Service, type Context } from "@deepseek-ai/cordis"
 import { Session } from "./session.js"
@@ -20,6 +23,7 @@ export type SessionCreateOptions = {
 }
 
 export type SessionListOptions = {
+  archived?: boolean
   includeSubagents?: boolean
 }
 
@@ -32,12 +36,15 @@ type ManagedSession = {
 export class SessionPlugin extends Service {
   readonly catalog = new SessionCatalog()
   private readonly records = new Map<string, ManagedSession>()
+  private archiveFile = join(agentStateDir(), "archived-sessions.json")
+  private archived: Record<string, number> = {}
   private currentSession?: Session
   private closed = false
   private closePromise?: Promise<void>
 
   constructor(ctx: Context) {
     super(ctx, "sessions")
+    if (existsSync(this.archiveFile)) this.archived = JSON.parse(readFileSync(this.archiveFile, "utf8"))
 
     ctx.effect(
       () => () => {
@@ -86,6 +93,7 @@ export class SessionPlugin extends Service {
   select(sessionId: string): Session {
     this.assertOpen()
 
+    if (this.isArchived(sessionId)) throw new Error("Restore archived session before using it")
     const managed = this.records.get(sessionId)
     if (!managed) throw new Error(`Unknown session: ${sessionId}`)
     this.currentSession = managed.session
@@ -112,8 +120,7 @@ export class SessionPlugin extends Service {
   /** 打开并选择一个已经持久化的 Session。 */
   async restore(sessionId: string): Promise<Session> {
     const session = await this.open(sessionId)
-    this.currentSession = session
-    return session
+    return this.select(session.sessionId)
   }
 
   /** 查询某个根 Session 产生的内部子 Agent。 */
@@ -164,6 +171,7 @@ export class SessionPlugin extends Service {
   async rename(sessionId: string, name: string): Promise<void> {
     this.assertOpen()
     const session = await this.open(sessionId)
+    if (this.isArchived(sessionId)) throw new Error("Archived session is read-only")
     await session.rename(name)
   }
 
@@ -228,10 +236,27 @@ export class SessionPlugin extends Service {
     const merged = new Map(disk.map((summary) => [summary.id, summary]))
     for (const summary of memory) merged.set(summary.id, summary)
     return [...merged.values()]
+      .filter(summary => this.isArchived(summary.id) === !!options.archived)
+      .map(summary => ({ ...summary, archivedAt: this.archived[summary.id] }))
       .filter((summary) => options.includeSubagents || summary.parentSession === undefined)
       .sort((left, right) =>
         right.updatedAt - left.updatedAt || left.id.localeCompare(right.id),
       )
+  }
+
+  isArchived(id: string): boolean { return Object.hasOwn(this.archived, id) }
+
+  setArchived(id: string, archived: boolean): void {
+    this.assertOpen()
+    if (!this.records.has(id)) throw new Error("Unknown session")
+    const next = { ...this.archived }
+    if (archived) next[id] = Date.now()
+    else delete next[id]
+    mkdirSync(agentStateDir(), { recursive: true })
+    writeFileSync(this.archiveFile + ".tmp", JSON.stringify(next))
+    renameSync(this.archiveFile + ".tmp", this.archiveFile)
+    this.archived = next
+    if (archived && this.currentSession?.sessionId === id) this.currentSession = undefined
   }
 
   /** 关闭所有 SessionStore，并阻止新的 Session 创建。 */
