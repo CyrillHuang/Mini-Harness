@@ -2,7 +2,7 @@ import { createServer, type ServerResponse } from "node:http"
 import { readFile, readdir, realpath } from "node:fs/promises"
 import { pathToFileURL } from "node:url"
 import { createRequire } from "node:module"
-import { dirname } from "node:path"
+import { dirname, basename, resolve, sep } from "node:path"
 import { homedir } from "node:os"
 import type { Context } from "@deepseek-ai/cordis"
 import type { GuiPlugin } from "../gui.js"
@@ -59,9 +59,14 @@ export async function startGuiServer(ctx: Context, gui: GuiPlugin, port: number)
       if (req.method === "GET" && url.pathname === "/api/archives") { json(await ctx.sessions.list(undefined, { archived: true })); return }
       if (req.method === "GET" && url.pathname === "/api/state") { json(gui.getState()); return }
       if (req.method === "GET" && url.pathname === "/api/directories") {
-        const path = await realpath(url.searchParams.get("path") || homedir())
+        const input = url.searchParams.get("path") || homedir() + sep
+        const expanded = input === "~" ? homedir() + sep : input.startsWith("~/") ? homedir() + input.slice(1) : input
+        const completing = url.searchParams.get("complete") === "1"
+        const absolute = resolve(homedir(), expanded)
+        const filter = completing && !expanded.endsWith(sep) && !expanded.endsWith("/") ? basename(absolute) : ""
+        const path = await realpath(filter ? dirname(absolute) : absolute)
         const entries = await readdir(path, { withFileTypes: true })
-        json({ path, parent: dirname(path), directories: entries.filter(e => e.isDirectory()).map(e => e.name).sort() }); return
+        json({ path, parent: dirname(path), separator: sep, directories: entries.filter(e => e.isDirectory() && e.name.toLowerCase().includes(filter.toLowerCase())).map(e => e.name).sort() }); return
       }
       if (req.method === "GET" && url.pathname === "/api/sessions") { json(await gui.listSessions(url.searchParams.get("cwd") || homedir())); return }
       if (req.method !== "POST") { res.writeHead(404).end(); return }

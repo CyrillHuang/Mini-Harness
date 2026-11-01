@@ -1,5 +1,5 @@
 import assert from "node:assert/strict"
-import { mkdtemp, rm } from "node:fs/promises"
+import { mkdtemp, rm, mkdir } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { Context } from "@deepseek-ai/cordis"
@@ -33,6 +33,11 @@ try {
     assert.match(response.headers.get("content-type")!, /javascript/)
     assert.ok((await response.text()).length > 100)
   }
+  await mkdir(join(home, "candidate-project"))
+  const candidates = await fetch(url + "/api/directories?complete=1&path=" + encodeURIComponent(join(home, "candidate"))).then(r => r.json() as Promise<{ directories: string[] }>)
+  assert.deepEqual(candidates.directories, ["candidate-project"])
+  const emptyCandidates = await fetch(url + "/api/directories?complete=1&path=" + encodeURIComponent(join(home, "no-match"))).then(r => r.json() as Promise<{ directories: string[] }>)
+  assert.deepEqual(emptyCandidates.directories, [])
   const created = await post("create", { cwd: home, name: "GUI test" })
   assert.ok(created.session)
   assert.equal(created.session.name, "GUI test")
